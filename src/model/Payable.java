@@ -1,5 +1,5 @@
 package model;
 
 public interface Payable {
-    double calculatePayment();
+    double getAmount();
 }

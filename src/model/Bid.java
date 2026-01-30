@@ -4,7 +4,7 @@ import exception.InvalidInputException;
 
 import java.time.LocalDate;
 
-public class Bid implements Validatable {
+public class Bid implements Payable, Validatable {
 
     private int id;
     private Project project;
@@ -12,8 +12,12 @@ public class Bid implements Validatable {
     private double bidAmount;
     private LocalDate bidDate;
 
-    public Bid(int id, Project project, Freelancer freelancer,
-               double bidAmount, LocalDate bidDate) {
+    public Bid(int id,
+               Project project,
+               Freelancer freelancer,
+               double bidAmount,
+               LocalDate bidDate) {
+
         this.id = id;
         this.project = project;
         this.freelancer = freelancer;
@@ -21,20 +25,36 @@ public class Bid implements Validatable {
         this.bidDate = bidDate;
     }
 
+    // ===== Payable =====
+    @Override
+    public double getAmount() {
+        return bidAmount;
+    }
+
+    // ===== Validatable =====
     @Override
     public void validate() {
-        if (project == null) {
-            throw new InvalidInputException("Bid must have a project");
+
+        if (project == null || project.getId() <= 0) {
+            throw new InvalidInputException("Bid must have valid project");
         }
-        if (freelancer == null) {
-            throw new InvalidInputException("Bid must have a freelancer");
+
+        if (freelancer == null || freelancer.getId() <= 0) {
+            throw new InvalidInputException("Bid must have valid freelancer");
         }
+
         if (bidAmount <= 0) {
-            throw new InvalidInputException("Bid amount must be greater than 0");
+            throw new InvalidInputException("Bid amount must be positive");
         }
+
         if (bidDate == null) {
             throw new InvalidInputException("Bid date is required");
         }
+    }
+
+    // ===== GETTERS =====
+    public int getId() {
+        return id;
     }
 
     public Project getProject() {
