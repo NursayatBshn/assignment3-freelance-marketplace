@@ -12,7 +12,8 @@ CREATE TABLE freelancers (
                              last_name VARCHAR(50) NOT NULL,
                              email VARCHAR(100) UNIQUE NOT NULL,
                              rating DECIMAL(2,1) CHECK (rating BETWEEN 0 AND 5),
-                             joined_at DATE NOT NULL
+                             joined_at DATE NOT NULL,
+                             phone VARCHAR(20)
 );
 
 CREATE TABLE projects (
