@@ -1,34 +1,69 @@
 package service;
 
 import exception.DuplicateResourceException;
-import exception.DatabaseOperationException;
-import model.Bid;
+import exception.InvalidInputException;
 import repository.BidRepository;
+import model.Bid;
 
-import java.sql.SQLException;
+import java.util.List;
 
 public class BidService {
 
-    private final BidRepository repository = new BidRepository();
+    private final BidRepository bidRepository = new BidRepository();
 
     public void create(Bid bid) {
+
+        if (bid == null) {
+            throw new InvalidInputException("Bid cannot be null");
+        }
+
         bid.validate();
 
-        try {
-            repository.create(bid);
-        } catch (DatabaseOperationException e) {
+        int projectId = bid.getProject().getId();
+        int freelancerId = bid.getFreelancer().getId();
 
-            Throwable cause = e.getCause();
-
-            if (cause instanceof SQLException sqlEx) {
-                if ("23505".equals(sqlEx.getSQLState())) {
-                    throw new DuplicateResourceException(
-                            "Freelancer has already placed a bid for this project"
-                    );
-                }
-            }
-
-            throw e;
+        if (projectId <= 0 || freelancerId <= 0) {
+            throw new InvalidInputException("Invalid project or freelancer");
         }
+
+        if (bidRepository.existsByProjectAndFreelancer(projectId, freelancerId)) {
+            throw new DuplicateResourceException(
+                    "Freelancer has already placed a bid for this project"
+            );
+        }
+
+        bidRepository.create(bid);
+    }
+
+    public List<Bid> getAll() {
+        return bidRepository.getAll();
+    }
+
+    public Bid getById(int id) {
+
+        if (id <= 0) {
+            throw new InvalidInputException("Bid id must be positive");
+        }
+
+        return bidRepository.getById(id);
+    }
+
+    public void update(int id, Bid bid) {
+
+        if (id <= 0) {
+            throw new InvalidInputException("Bid id must be positive");
+        }
+
+        bid.validate();
+        bidRepository.update(id, bid);
+    }
+
+    public void delete(int id) {
+
+        if (id <= 0) {
+            throw new InvalidInputException("Bid id must be positive");
+        }
+
+        bidRepository.delete(id);
     }
 }
