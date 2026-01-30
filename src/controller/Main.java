@@ -1,102 +1,141 @@
 package controller;
 
-import model.Bid;
-import model.Client;
-import model.Freelancer;
-import model.Project;
-import service.BidService;
-import service.ProjectService;
+import model.*;
+import service.*;
+import exception.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
 
+        ClientService clientService = new ClientService();
+        FreelancerService freelancerService = new FreelancerService();
         ProjectService projectService = new ProjectService();
         BidService bidService = new BidService();
 
-        Client client = new Client(
-                1,
-                "Айдос",
-                "Жанабаев",
-                "aidos@mail.com",
-                LocalDate.of(2024, 1, 10)
-        );
-
-        Freelancer freelancer = new Freelancer(
-                1,
-                "Бекзат",
-                "Ибраев",
-                "bekzat@mail.com",
-                4.8,
-                LocalDate.of(2023, 11, 1),
-                "+77010000001"
-        );
-
-        Project project = new Project(
-                0,
-                "Website Landing Page",
-                1200,
-                LocalDate.now(),
-                client
-        );
-
         try {
+            /* ================= CLIENT ================= */
+            System.out.println("=== CLIENT CRUD ===");
+
+            Client client;
+            try {
+                client = new Client(2, "Aizhan", "Zhanabayeva", "aizhan@mail.com", LocalDate.now());
+                clientService.create(client);
+                System.out.println("Client created");
+            } catch (DuplicateResourceException e) {
+                client = clientService.getAll().stream()
+                        .filter(c -> c.getEmail().equals("aizhan@mail.com") || c.getEmail().equals("aizhan.zh@mail.com"))
+                        .findFirst()
+                        .orElse(clientService.getAll().get(0));
+                System.out.println("Client already exists, using existing one");
+            }
+
+            try {
+                client.setEmail("aizhan.zh@mail.com");
+                clientService.update(client.getId(), client);
+                System.out.println("Client updated");
+            } catch (Exception e) {
+                System.out.println("Could not update client: " + e.getMessage());
+            }
+
+            /* ================= FREELANCER ================= */
+            System.out.println("\n=== FREELANCER CRUD ===");
+
+            Freelancer freelancer;
+            try {
+                freelancer = new Freelancer(
+                        2,
+                        "Bekzhan",
+                        "Maqsat",
+                        "bekzhan@mail.com",
+                        4.0,
+                        LocalDate.now()
+                );
+                freelancerService.create(freelancer);
+                System.out.println("Freelancer created");
+            } catch (DuplicateResourceException e) {
+                freelancer = freelancerService.getAll().get(0);
+                System.out.println("Freelancer already exists, using existing one");
+            }
+
+            freelancer.setRating(4.9);
+            freelancerService.update(freelancer.getId(), freelancer);
+            System.out.println("Freelancer updated");
+
+            /* ================= PROJECT ================= */
+            System.out.println("\n=== PROJECT CRUD ===");
+
+            Project project = new Project(
+                    2,
+                    "Website Deploy",
+                    2000,
+                    LocalDate.now(),
+                    client
+            );
             projectService.create(project);
-            System.out.println("Project created successfully");
+            System.out.println("Project created");
+
+            List<Project> projects = projectService.getAll();
+            Project existingProject = projects.get(2);
+
+            existingProject.setBudget(2000);
+            projectService.update(existingProject.getId(), existingProject);
+            System.out.println("Project updated");
+
+            /* ================= BID ================= */
+            System.out.println("\n=== BID CRUD + BUSINESS RULE ===");
+
+            Bid bid = new Bid(
+                    0,
+                    existingProject,
+                    freelancer,
+                    1400,
+                    LocalDate.now()
+            );
+
+            bidService.create(bid);
+            System.out.println("Bid created");
+
+            try {
+                bidService.create(bid);
+            } catch (DuplicateResourceException e) {
+                System.out.println("EXPECTED ERROR: " + e.getMessage());
+            }
+
+            /* ================= POLYMORPHISM ================= */
+            System.out.println("\n=== POLYMORPHISM (BaseUser) ===");
+
+            List<BaseUser> users = List.of(client, freelancer);
+            users.forEach(BaseUser::printInfo);
+
+            System.out.println("\n=== POLYMORPHISM (Payable) ===");
+
+            List<Payable> payables = List.of(existingProject, bid);
+            payables.forEach(p ->
+                    System.out.println("Amount: " + p.getAmount())
+            );
+
+            /* ================= VALIDATION ================= */
+            System.out.println("\n=== VALIDATION ERROR DEMO ===");
+
+            try {
+                Project badProject = new Project(
+                        0,
+                        "",
+                        -500,
+                        LocalDate.now(),
+                        client
+                );
+                projectService.create(badProject);
+            } catch (InvalidInputException e) {
+                System.out.println("EXPECTED ERROR: " + e.getMessage());
+            }
+
         } catch (Exception e) {
-            System.out.println("ERROR creating project: " + e.getMessage());
-        }
-
-        Project invalidProject = new Project(
-                0,
-                "Broken Project",
-                -500,
-                LocalDate.now(),
-                client
-        );
-
-        try {
-            projectService.create(invalidProject);
-        } catch (Exception e) {
-            System.out.println("EXPECTED PROJECT ERROR: " + e.getMessage());
-        }
-
-        System.out.println("\nAll projects:");
-        projectService.getAll().forEach(p ->
-                System.out.println(p.getTitle() + " | " + p.getBudget())
-        );
-
-        Project projectFromDb = projectService.getAll().get(0);
-
-        Bid bid1 = new Bid(
-                0,
-                projectFromDb,
-                freelancer,
-                900,
-                LocalDate.now()
-        );
-
-        try {
-            bidService.create(bid1);
-            System.out.println("Bid created successfully");
-        } catch (Exception e) {
-            System.out.println("ERROR creating bid: " + e.getMessage());
-        }
-
-        Bid bid2 = new Bid(
-                0,
-                project,
-                freelancer,
-                850,
-                LocalDate.now()
-        );
-
-        try {
-            bidService.create(bid2);
-        } catch (Exception e) {
-            System.out.println("EXPECTED DUPLICATE BID ERROR: " + e.getMessage());
+            System.out.println("UNEXPECTED ERROR: " + e.getMessage());
         }
     }
 }
