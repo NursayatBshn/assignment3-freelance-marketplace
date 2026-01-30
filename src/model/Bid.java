@@ -1,6 +1,8 @@
 package model;
 
 import exception.InvalidInputException;
+import model.interfaces.Payable;
+import model.interfaces.Validatable;
 
 import java.time.LocalDate;
 

@@ -4,20 +4,18 @@ import exception.DatabaseOperationException;
 import exception.DuplicateResourceException;
 import exception.ResourceNotFoundException;
 import model.Freelancer;
+import repository.interfaces.CrudRepository;
 import utils.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FreelancerRepository {
+public class FreelancerRepository implements CrudRepository<Freelancer> {
 
+    @Override
     public void create(Freelancer freelancer) {
-        String sql = "INSERT INTO freelancers (first_name, last_name, email, rating, joined_at) VALUES (?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO freelancers (first_name, last_name, email, rating, joined_at) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -28,7 +26,6 @@ public class FreelancerRepository {
             ps.setDate(5, Date.valueOf(freelancer.getJoinedAt()));
             ps.executeUpdate();
         } catch (SQLException e) {
-            // Добавь эту проверку:
             if ("23505".equals(e.getSQLState())) {
                 throw new DuplicateResourceException("Freelancer with email already exists: " + freelancer.getEmail());
             }
@@ -36,14 +33,10 @@ public class FreelancerRepository {
         }
     }
 
+    @Override
     public List<Freelancer> getAll() {
-
         List<Freelancer> freelancers = new ArrayList<>();
-
-        String sql = """
-            SELECT freelancer_id, first_name, last_name, email, rating, joined_at
-            FROM freelancers;
-        """;
+        String sql = "SELECT freelancer_id, first_name, last_name, email, rating, joined_at FROM freelancers";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -59,21 +52,15 @@ public class FreelancerRepository {
                         rs.getDate("joined_at").toLocalDate()
                 ));
             }
-
         } catch (SQLException e) {
             throw new DatabaseOperationException("Failed to fetch freelancers", e);
         }
-
         return freelancers;
     }
 
+    @Override
     public Freelancer getById(int id) {
-
-        String sql = """
-            SELECT freelancer_id, first_name, last_name, email, rating, joined_at
-            FROM freelancers
-            WHERE freelancer_id = ?;
-        """;
+        String sql = "SELECT freelancer_id, first_name, last_name, email, rating, joined_at FROM freelancers WHERE freelancer_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -92,20 +79,14 @@ public class FreelancerRepository {
                     );
                 }
             }
-
             throw new ResourceNotFoundException("Freelancer not found with id: " + id);
-
         } catch (SQLException e) {
             throw new DatabaseOperationException("Failed to fetch freelancer", e);
         }
     }
 
     public Freelancer findByEmail(String email) {
-        String sql = """
-        SELECT freelancer_id, first_name, last_name, email, rating, joined_at
-        FROM freelancers
-        WHERE email = ?;
-    """;
+        String sql = "SELECT freelancer_id, first_name, last_name, email, rating, joined_at FROM freelancers WHERE email = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -124,19 +105,15 @@ public class FreelancerRepository {
                     );
                 }
             }
-            return null; // Возвращаем null, если фрилансер не найден
+            return null;
         } catch (SQLException e) {
             throw new DatabaseOperationException("Failed to find freelancer by email", e);
         }
     }
 
+    @Override
     public void update(int id, Freelancer freelancer) {
-
-        String sql = """
-            UPDATE freelancers
-            SET first_name = ?, last_name = ?, email = ?, rating = ?
-            WHERE freelancer_id = ?;
-        """;
+        String sql = "UPDATE freelancers SET first_name = ?, last_name = ?, email = ?, rating = ? WHERE freelancer_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -150,15 +127,14 @@ public class FreelancerRepository {
             if (ps.executeUpdate() == 0) {
                 throw new ResourceNotFoundException("Freelancer not found with id: " + id);
             }
-
         } catch (SQLException e) {
             throw new DatabaseOperationException("Failed to update freelancer", e);
         }
     }
 
+    @Override
     public void delete(int id) {
-
-        String sql = "DELETE FROM freelancers WHERE freelancer_id = ?;";
+        String sql = "DELETE FROM freelancers WHERE freelancer_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -168,7 +144,6 @@ public class FreelancerRepository {
             if (ps.executeUpdate() == 0) {
                 throw new ResourceNotFoundException("Freelancer not found with id: " + id);
             }
-
         } catch (SQLException e) {
             throw new DatabaseOperationException("Failed to delete freelancer", e);
         }

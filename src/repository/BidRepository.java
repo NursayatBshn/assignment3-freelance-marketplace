@@ -39,7 +39,7 @@ public class BidRepository {
 
         // Выбираем данные из всех связанных таблиц
         String sql = """
-        SELECT 
+        SELECT
             b.bid_id, b.bid_amount, b.bid_date,
             f.freelancer_id, f.first_name AS f_name, f.last_name AS f_last, f.email AS f_email, f.rating, f.joined_at,
             p.project_id, p.title, p.budget, p.created_at,
@@ -101,7 +101,7 @@ public class BidRepository {
     public Bid getById(int id) {
         // Объединяем 4 таблицы, чтобы собрать объект Bid целиком
         String sql = """
-            SELECT 
+            SELECT
                 b.bid_id, b.bid_amount, b.bid_date,
                 f.freelancer_id, f.first_name AS f_name, f.last_name AS f_last, f.email AS f_email, f.rating, f.joined_at,
                 p.project_id, p.title, p.budget, p.created_at,

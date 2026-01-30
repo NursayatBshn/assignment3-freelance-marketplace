@@ -1,45 +1,27 @@
 package model;
 
-public abstract class BaseUser {
+public abstract class BaseUser extends BaseEntity {
+    private String firstName;
+    private String lastName;
+    private String email;
 
-    protected int id;
-    protected String firstName;
-    protected String lastName;
-    protected String email;
-
-    protected BaseUser(int id,
-                       String firstName,
-                       String lastName,
-                       String email) {
-
-        this.id = id;
+    protected BaseUser(int id, String firstName, String lastName, String email) {
+        super(id);
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
     }
 
-    // ===== ABSTRACT METHODS =====
-
     public abstract String getRole();
 
-    public abstract double getRating();
-
-    // ===== CONCRETE METHOD (POLYMORPHISM) =====
-
-    public void printInfo() {
-        System.out.println(
-                getRole() + ": " + firstName + " " + lastName + " (" + email + ")"
-        );
+    @Override
+    public String getEntityName() {
+        return firstName + " " + lastName;
     }
 
-    // ===== GETTERS / SETTERS =====
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    @Override
+    public String getFullDescription() {
+        return getRole() + ": " + getEntityName() + " (" + email + ")";
     }
 
     public String getFirstName() {

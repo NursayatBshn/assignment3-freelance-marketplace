@@ -2,62 +2,45 @@ package service;
 
 import exception.InvalidInputException;
 import model.Project;
-import repository.ProjectRepository;
+import repository.interfaces.CrudRepository;
+import utils.SortingUtils;
 
 import java.util.List;
 
 public class ProjectService {
+    private final CrudRepository<Project> repository;
 
-    private final ProjectRepository repository = new ProjectRepository();
+    public ProjectService(CrudRepository<Project> repository) {
+        this.repository = repository;
+    }
 
     public void create(Project project) {
-
         if (project == null) {
             throw new InvalidInputException("Project cannot be null");
         }
 
-        project.validate(); // если реализован Validatable
-
-        if (project.getClient() == null || project.getClient().getId() <= 0) {
-            throw new InvalidInputException("Project must have a valid client");
-        }
+        project.logValidationStatus();
+        project.validate();
 
         repository.create(project);
     }
 
-
     public List<Project> getAll() {
-        return repository.getAll();
+        List<Project> projects = repository.getAll();
+        SortingUtils.sort(projects, (p1, p2) -> Double.compare(p2.getBudget(), p1.getBudget()));
+        return projects;
     }
+
     public Project getById(int id) {
-
-        if (id <= 0) {
-            throw new InvalidInputException("Project id must be positive");
-        }
-
         return repository.getById(id);
     }
+
     public void update(int id, Project project) {
-
-        if (id <= 0) {
-            throw new InvalidInputException("Project id must be positive");
-        }
-
-        if (project == null) {
-            throw new InvalidInputException("Project cannot be null");
-        }
-
         project.validate();
-
         repository.update(id, project);
     }
+
     public void delete(int id) {
-
-        if (id <= 0) {
-            throw new InvalidInputException("Project id must be positive");
-        }
-
         repository.delete(id);
     }
-
 }

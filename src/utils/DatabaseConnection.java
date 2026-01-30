@@ -15,7 +15,7 @@ public class DatabaseConnection {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to connect to PostgreSQL", e);
+            throw new RuntimeException("Failed to connect to PostgresSQL", e);
         }
     }
 }

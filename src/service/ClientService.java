@@ -1,61 +1,41 @@
 package service;
 
 import exception.InvalidInputException;
-import exception.ResourceNotFoundException;
 import model.Client;
-import repository.ClientRepository;
+import repository.interfaces.CrudRepository;
 
 import java.util.List;
 
 public class ClientService {
+    private final CrudRepository<Client> repository;
 
-    private final ClientRepository clientRepository = new ClientRepository();
+    public ClientService(CrudRepository<Client> repository) {
+        this.repository = repository;
+    }
 
     public void create(Client client) {
-
         if (client == null) {
             throw new InvalidInputException("Client cannot be null");
         }
 
         client.validate();
-
-        ClientRepository.create(client);
+        repository.create(client);
     }
 
     public List<Client> getAll() {
-        return clientRepository.getAll();
+        return repository.getAll();
     }
 
     public Client getById(int id) {
-
-        if (id <= 0) {
-            throw new InvalidInputException("Client id must be positive");
-        }
-
-        return clientRepository.getById(id);
+        return repository.getById(id);
     }
 
     public void update(int id, Client client) {
-
-        if (id <= 0) {
-            throw new InvalidInputException("Client id must be positive");
-        }
-
-        if (client == null) {
-            throw new InvalidInputException("Client cannot be null");
-        }
-
         client.validate();
-
-        clientRepository.update(id, client);
+        repository.update(id, client);
     }
 
     public void delete(int id) {
-
-        if (id <= 0) {
-            throw new InvalidInputException("Client id must be positive");
-        }
-
-        clientRepository.delete(id);
+        repository.delete(id);
     }
 }

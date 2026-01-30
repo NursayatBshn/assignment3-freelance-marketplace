@@ -1,11 +1,11 @@
 package model;
 
 import exception.InvalidInputException;
+import model.interfaces.Validatable;
 
 import java.time.LocalDate;
 
-public class Client extends BaseUser implements Validatable {
-
+public class Client extends BaseUser implements Validatable<Client> {
     private LocalDate registeredAt;
 
     public Client(int id, String firstName, String lastName, String email, LocalDate registeredAt) {
@@ -15,21 +15,12 @@ public class Client extends BaseUser implements Validatable {
 
     @Override
     public void validate() {
-
-        if (getFirstName() == null || getFirstName().isBlank()) {
-            throw new InvalidInputException("Client first name must not be empty");
-        }
-
-        if (getLastName() == null || getLastName().isBlank()) {
-            throw new InvalidInputException("Client last name must not be empty");
-        }
-
-        if (getEmail() == null || !getEmail().contains("@")) {
-            throw new InvalidInputException("Client email is invalid");
-        }
+        Validatable.checkStringNotBlank(getFirstName(), "First name");
+        Validatable.checkStringNotBlank(getLastName(), "Last name");
+        Validatable.checkStringNotBlank(getEmail(), "Email");
 
         if (registeredAt == null) {
-            throw new InvalidInputException("Client registration date is required");
+            throw new InvalidInputException("Registration date is required");
         }
     }
 
@@ -38,26 +29,11 @@ public class Client extends BaseUser implements Validatable {
         return "CLIENT";
     }
 
-    @Override
-    public double getRating() {
-        return 0;
-    }
-
     public LocalDate getRegisteredAt() {
         return registeredAt;
     }
-    public String getFirstName() {
-        return super.getFirstName();
-    }
-    public String getLastName() {
-        return super.getLastName();
-    }
-    public String getEmail() {
-        return super.getEmail();
-    }
 
-    @Override
-    public int getId() {
-        return super.getId();
+    public void setRegisteredAt(LocalDate registeredAt) {
+        this.registeredAt = registeredAt;
     }
 }
